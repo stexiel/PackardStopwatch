@@ -13,13 +13,23 @@ workflows:
     scripts:
       - name: Create iOS project structure
         script: |
+          # Показываем текущую директорию
+          pwd
+          ls -la
           # Удаляем старую iOS структуру если есть
-          rm -rf ios
-          # Создаем новый iOS проект
-          flutter create --org com.packard --platforms=ios --project-name packard_stopwatch .
+          rm -rf ios android
+          # Создаем новый Flutter проект с iOS поддержкой
+          flutter create --org com.packard --platforms=ios --project-name packard_stopwatch . --verbose
           # Проверяем что iOS проект создан
-          ls -la ios/
-          ls -la ios/Runner.xcodeproj/
+          echo "=== Checking iOS directory ==="
+          ls -la ios/ || echo "iOS directory not found!"
+          echo "=== Checking xcodeproj ==="
+          ls -la ios/Runner.xcodeproj/ || echo "xcodeproj not found!"
+          # Если не создался, пробуем альтернативный метод
+          if [ ! -d "ios/Runner.xcodeproj" ]; then
+            echo "=== Trying alternative method ==="
+            flutter create --platforms=ios .
+          fi
       - name: Configure iOS project
         script: |
           # Обновляем Bundle ID и название приложения
