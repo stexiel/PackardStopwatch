@@ -14,20 +14,26 @@
 
 ### 1. Подготовка проекта
 
-Проект уже настроен для сборки через Codemagic CI/CD.
+Проект настроен для автоматической сборки через Codemagic CI/CD.
+iOS проект создается автоматически во время сборки - локальная установка Flutter не требуется!
 
 ### 2. Настройка Codemagic
 
 1. Зайдите на https://codemagic.io
 2. Войдите через GitHub/GitLab/Bitbucket
-3. Добавьте этот репозиторий в Codemagic
+3. Добавьте репозиторий `stexiel/PackardStopwatch`
 4. Codemagic автоматически обнаружит `codemagic.yaml`
 
 ### 3. Запуск сборки
 
 1. В Codemagic выберите workflow `ios-workflow`
 2. Нажмите "Start new build"
-3. Дождитесь завершения сборки (15-20 минут)
+3. Сборка автоматически:
+   - Создаст iOS проект структуру
+   - Настроит Bundle ID
+   - Установит зависимости
+   - Соберет .ipa файл
+4. Дождитесь завершения (15-20 минут)
 
 ### 4. Скачивание .ipa
 
@@ -61,15 +67,16 @@ flutter build ios --release --no-codesign
 ```
 packard_stopwatch/
 ├── lib/
-│   └── main.dart          # Основной код приложения
-├── ios/                   # iOS конфигурация
-│   ├── Runner/
-│   │   ├── Info.plist
-│   │   └── AppDelegate.swift
-│   └── Podfile
-├── pubspec.yaml           # Flutter зависимости
-└── codemagic.yaml         # CI/CD конфигурация
+│   └── main.dart              # Основной код приложения
+├── test/
+│   └── index.html             # Веб-версия для тестирования
+├── pubspec.yaml               # Flutter зависимости
+├── codemagic.yaml             # CI/CD (автоматически создает iOS проект)
+├── README.md                  # Документация
+└── PUSH_INSTRUCTIONS.md       # Инструкции по Git
 ```
+
+**Примечание:** iOS проект (`ios/`) создается автоматически в Codemagic при сборке.
 
 ## Технологии
 
