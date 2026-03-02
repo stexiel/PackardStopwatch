@@ -7,18 +7,29 @@ workflows:
       xcode: latest
       cocoapods: default
     scripts:
-      - name: Get Flutter packages
+      - name: Очистка и подготовка
+        script: |
+          flutter clean
+          rm -rf ios/Pods
+          rm -rf ios/.symlinks
+          rm -rf ios/Flutter/Flutter.framework
+          rm -rf ios/Flutter/Flutter.podspec
+      - name: Получение зависимостей
         script: |
           flutter pub get
-      - name: Build iOS
+      - name: Установка CocoaPods
+        script: |
+          cd ios
+          pod install
+          cd ..
+      - name: Сборка iOS
         script: |
           flutter build ios --release --no-codesign
-      - name: Create unsigned IPA
+      - name: Создание IPA
         script: |
           cd build/ios/iphoneos
-          mkdir Payload
+          mkdir -p Payload
           cp -r Runner.app Payload/
-          zip -r $CM_BUILD_DIR/PackardStopwatch.ipa Payload
+          zip -r ../../../PackardStopwatch.ipa Payload
     artifacts:
-      - build/ios/iphoneos/*.ipa
-      - $CM_BUILD_DIR/*.ipa
+      - PackardStopwatch.ipa
