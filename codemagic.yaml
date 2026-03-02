@@ -1,88 +1,38 @@
 workflows:
-  expo-ios:
-    name: Expo iOS Build
-    max_build_duration: 60
+  ios-workflow:
+    name: iOS Packard Stopwatch
+    max_build_duration: 120
     instance_type: mac_mini_m1
-    triggering:
-      events:
-        - push
-      branch_patterns:
-        - pattern: 'main'
-          include: true
     environment:
-      node: 18.18.0
-      xcode: latest
-      cocoapods: default
       vars:
         BUNDLE_ID: "com.packard.stopwatch"
-        # Отключаем автоматическое определение Flutter
-        CM_FLUTTER_PROJECT: "false"
+        APP_NAME: "Packard Stopwatch"
+      flutter: stable
+      xcode: latest
+      cocoapods: default
     scripts:
-      - name: Пропуск Flutter зависимостей (проект на React Native)
+      - name: Get Flutter packages
         script: |
-          echo "Это React Native проект, пропускаем Flutter шаги"
-          echo "Используем npm вместо Flutter"
-      
-      - name: Установка npm зависимостей
+          flutter packages pub get
+      - name: Install CocoaPods dependencies
         script: |
-          npm install
-      
-      - name: Генерация нативного iOS проекта через Expo
+          cd ios && pod install
+      - name: Build iOS app
         script: |
-          npx expo prebuild --platform ios --clean
-      
-      - name: Установка CocoaPods зависимостей
+          flutter build ios --release --no-codesign
+      - name: Create IPA (без подписи для тестирования)
         script: |
-          cd ios
-          pod install
-          cd ..
-      
-      - name: Отключение code signing в Xcode проекте
-        script: |
-          # Находим имя проекта
-          PROJECT_NAME=$(ls ios/*.xcodeproj | head -n 1 | xargs basename -s .xcodeproj)
-          echo "Project name: $PROJECT_NAME"
-          
-          # Отключаем code signing
-          sed -i '' 's/CODE_SIGN_IDENTITY = "iPhone Developer";/CODE_SIGN_IDENTITY = "";/g' ios/$PROJECT_NAME.xcodeproj/project.pbxproj
-          sed -i '' 's/CODE_SIGN_STYLE = Automatic;/CODE_SIGN_STYLE = Manual;/g' ios/$PROJECT_NAME.xcodeproj/project.pbxproj
-          sed -i '' 's/DEVELOPMENT_TEAM = .*/DEVELOPMENT_TEAM = "";/g' ios/$PROJECT_NAME.xcodeproj/project.pbxproj
-          sed -i '' 's/"CODE_SIGN_IDENTITY\[sdk=iphoneos\*\]" = "iPhone Developer";/"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "";/g' ios/$PROJECT_NAME.xcodeproj/project.pbxproj
-          echo "Code signing отключен"
-      
-      - name: Сборка iOS без code signing
-        script: |
-          PROJECT_NAME=$(ls ios/*.xcodeproj | head -n 1 | xargs basename -s .xcodeproj)
-          cd ios
-          xcodebuild -workspace $PROJECT_NAME.xcworkspace \
-            -scheme $PROJECT_NAME \
-            -configuration Release \
-            -sdk iphoneos \
-            -destination 'generic/platform=iOS' \
-            CODE_SIGN_IDENTITY="" \
-            CODE_SIGNING_REQUIRED=NO \
-            CODE_SIGNING_ALLOWED=NO \
-            DEVELOPMENT_TEAM="" \
-            clean build
-          cd ..
-      
-      - name: Создание unsigned IPA
-        script: |
-          PROJECT_NAME=$(ls ios/*.xcodeproj | head -n 1 | xargs basename -s .xcodeproj)
-          cd ios/build/Release-iphoneos
-          mkdir -p Payload
-          cp -r $PROJECT_NAME.app Payload/
-          zip -r ../../../PackardStopwatch-unsigned.ipa Payload
-          cd ../../..
-          ls -lh PackardStopwatch-unsigned.ipa
-    
+          cd build/ios/iphoneos
+          mkdir Payload
+          cp -r Runner.app Payload/
+          zip -r packard_stopwatch.ipa Payload
     artifacts:
-      - PackardStopwatch-unsigned.ipa
-    
+      - build/ios/iphoneos/*.ipa
+      - build/ios/iphoneos/Runner.app
     publishing:
       email:
         recipients:
-          - stexielgithub@gmail.com
+          - your-email@example.com
         notify:
           success: true
           failure: true

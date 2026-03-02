@@ -1,6 +1,6 @@
 # Packard Stopwatch
 
-Секундомер для iOS на React Native + Expo
+Секундомер для iOS на Flutter
 
 ## Функции
 
@@ -10,60 +10,74 @@
 - 🟢 Зеленый цвет когда работает
 - 🔴 Красный цвет когда на паузе
 
-## Установка зависимостей
+## Сборка iOS через Codemagic
 
-```bash
-npm install
-```
+### 1. Подготовка проекта
 
-## Запуск для разработки
+Проект уже настроен для сборки через Codemagic CI/CD.
 
-```bash
-npm start
-```
+### 2. Настройка Codemagic
 
-## Сборка iOS через EAS
+1. Зайдите на https://codemagic.io
+2. Войдите через GitHub/GitLab/Bitbucket
+3. Добавьте этот репозиторий в Codemagic
+4. Codemagic автоматически обнаружит `codemagic.yaml`
 
-### 1. Установка EAS CLI
+### 3. Запуск сборки
 
-```bash
-npm install -g eas-cli
-```
+1. В Codemagic выберите workflow `ios-workflow`
+2. Нажмите "Start new build"
+3. Дождитесь завершения сборки (15-20 минут)
 
-### 2. Логин в Expo
-
-```bash
-eas login
-```
-
-### 3. Конфигурация проекта
-
-```bash
-eas build:configure
-```
-
-### 4. Сборка iOS
-
-```bash
-eas build --platform ios --profile preview
-```
-
-### 5. Скачивание .ipa
+### 4. Скачивание .ipa
 
 После успешной сборки:
-1. Перейдите на https://expo.dev
-2. Откройте ваш проект
-3. Перейдите в раздел "Builds"
-4. Скачайте .ipa файл
+1. Откройте завершенную сборку в Codemagic
+2. Перейдите в раздел "Artifacts"
+3. Скачайте файл `packard_stopwatch.ipa`
 
-### 6. Установка на iPhone
+### 5. Установка на iPhone
 
-Используйте:
+Используйте один из методов:
 - **AltStore** (https://altstore.io/)
 - **Sideloadly** (https://sideloadly.io/)
+- **TrollStore** (для jailbroken устройств)
+
+### Локальная разработка (если установлен Flutter)
+
+```bash
+# Установка зависимостей
+flutter pub get
+
+# Запуск на iOS симуляторе
+flutter run
+
+# Сборка iOS (требуется macOS)
+flutter build ios --release --no-codesign
+```
+
+## Структура проекта
+
+```
+packard_stopwatch/
+├── lib/
+│   └── main.dart          # Основной код приложения
+├── ios/                   # iOS конфигурация
+│   ├── Runner/
+│   │   ├── Info.plist
+│   │   └── AppDelegate.swift
+│   └── Podfile
+├── pubspec.yaml           # Flutter зависимости
+└── codemagic.yaml         # CI/CD конфигурация
+```
 
 ## Технологии
 
-- React Native
-- Expo SDK 51
-- React Native Gesture Handler
+- Flutter 3.x
+- Dart 3.x
+- iOS 12.0+
+- Codemagic CI/CD
+
+## Bundle ID
+
+`com.packard.stopwatch`
