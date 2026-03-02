@@ -11,33 +11,12 @@ workflows:
       xcode: latest
       cocoapods: default
     scripts:
-      - name: Create iOS project structure
+      - name: Verify iOS project structure
         script: |
-          # Показываем текущую директорию
-          pwd
-          ls -la
-          # Удаляем старую iOS структуру если есть
-          rm -rf ios android
-          # Создаем новый Flutter проект с iOS поддержкой
-          flutter create --org com.packard --platforms=ios --project-name packard_stopwatch . --verbose
-          # Проверяем что iOS проект создан
-          echo "=== Checking iOS directory ==="
-          ls -la ios/ || echo "iOS directory not found!"
-          echo "=== Checking xcodeproj ==="
-          ls -la ios/Runner.xcodeproj/ || echo "xcodeproj not found!"
-          # Если не создался, пробуем альтернативный метод
-          if [ ! -d "ios/Runner.xcodeproj" ]; then
-            echo "=== Trying alternative method ==="
-            flutter create --platforms=ios .
-          fi
-      - name: Configure iOS project
-        script: |
-          # Обновляем Bundle ID и название приложения
-          /usr/libexec/PlistBuddy -c "Set :CFBundleIdentifier $BUNDLE_ID" ios/Runner/Info.plist
-          /usr/libexec/PlistBuddy -c "Set :CFBundleDisplayName $APP_NAME" ios/Runner/Info.plist
-          # Добавляем поддержку всех ориентаций
-          /usr/libexec/PlistBuddy -c "Add :UIRequiresFullScreen bool false" ios/Runner/Info.plist || true
-          /usr/libexec/PlistBuddy -c "Add :UIStatusBarHidden bool true" ios/Runner/Info.plist || true
+          echo "=== Checking iOS project ==="
+          ls -la ios/
+          ls -la ios/Runner.xcodeproj/
+          ls -la ios/Runner.xcodeproj/xcshareddata/xcschemes/
       - name: Get Flutter packages
         script: |
           flutter packages pub get
