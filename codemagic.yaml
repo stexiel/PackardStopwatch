@@ -27,12 +27,23 @@ workflows:
           cd ios
           pod install
           cd ..
-      - name: Сборка iOS без подписи
+      - name: Сборка iOS через xcodebuild без подписи
         script: |
-          flutter build ios --release --no-codesign
+          cd ios
+          xcodebuild -workspace Runner.xcworkspace \
+            -scheme Runner \
+            -configuration Release \
+            -sdk iphoneos \
+            -destination 'generic/platform=iOS' \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            DEVELOPMENT_TEAM="" \
+            clean build
+          cd ..
       - name: Создание unsigned IPA
         script: |
-          cd build/ios/iphoneos
+          cd ios/build/Release-iphoneos
           mkdir -p Payload
           cp -r Runner.app Payload/
           zip -r ../../../PackardStopwatch-unsigned.ipa Payload
