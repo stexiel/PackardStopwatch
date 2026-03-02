@@ -16,7 +16,10 @@ workflows:
           # Удаляем старую iOS структуру если есть
           rm -rf ios
           # Создаем новый iOS проект
-          flutter create --org com.packard --platforms=ios .
+          flutter create --org com.packard --platforms=ios --project-name packard_stopwatch .
+          # Проверяем что iOS проект создан
+          ls -la ios/
+          ls -la ios/Runner.xcodeproj/
       - name: Configure iOS project
         script: |
           # Обновляем Bundle ID и название приложения
