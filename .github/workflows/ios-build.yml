@@ -8,71 +8,41 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-ios:
+  build:
     runs-on: macos-latest
     
     steps:
-    - name: Checkout код
+    - name: Checkout code
       uses: actions/checkout@v4
     
-    - name: Установка Node.js
-      uses: actions/setup-node@v4
+    - name: Setup Flutter
+      uses: subosito/flutter-action@v2
       with:
-        node-version: '18'
-        cache: 'npm'
+        flutter-version: 'stable'
+        channel: 'stable'
     
-    - name: Установка зависимостей
-      run: npm install
+    - name: Install dependencies
+      run: flutter pub get
     
-    - name: Генерация нативного iOS проекта через Expo
-      run: npx expo prebuild --platform ios --clean
-    
-    - name: Установка CocoaPods зависимостей
+    - name: Install CocoaPods
       run: |
         cd ios
         pod install
-        cd ..
     
-    - name: Отключение code signing в Xcode проекте
-      run: |
-        PROJECT_NAME=$(basename ios/*.xcodeproj .xcodeproj)
-        echo "Project name: $PROJECT_NAME"
-        
-        sed -i '' 's/CODE_SIGN_IDENTITY = "iPhone Developer";/CODE_SIGN_IDENTITY = "";/g' ios/$PROJECT_NAME.xcodeproj/project.pbxproj
-        sed -i '' 's/CODE_SIGN_STYLE = Automatic;/CODE_SIGN_STYLE = Manual;/g' ios/$PROJECT_NAME.xcodeproj/project.pbxproj
-        sed -i '' 's/DEVELOPMENT_TEAM = .*/DEVELOPMENT_TEAM = "";/g' ios/$PROJECT_NAME.xcodeproj/project.pbxproj
-        sed -i '' 's/"CODE_SIGN_IDENTITY\[sdk=iphoneos\*\]" = "iPhone Developer";/"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "";/g' ios/$PROJECT_NAME.xcodeproj/project.pbxproj
-        echo "Code signing отключен"
+    - name: Build iOS app
+      run: flutter build ios --release --no-codesign
     
-    - name: Сборка iOS без code signing
+    - name: Create IPA file
       run: |
-        PROJECT_NAME=$(basename ios/*.xcodeproj .xcodeproj)
-        cd ios
-        xcodebuild -workspace $PROJECT_NAME.xcworkspace \
-          -scheme $PROJECT_NAME \
-          -configuration Release \
-          -sdk iphoneos \
-          -destination 'generic/platform=iOS' \
-          CODE_SIGN_IDENTITY="" \
-          CODE_SIGNING_REQUIRED=NO \
-          CODE_SIGNING_ALLOWED=NO \
-          DEVELOPMENT_TEAM="" \
-          clean build
-        cd ..
-    
-    - name: Создание unsigned IPA
-      run: |
-        PROJECT_NAME=$(basename ios/*.xcodeproj .xcodeproj)
-        cd ios/build/Release-iphoneos
+        cd build/ios/iphoneos
         mkdir -p Payload
-        cp -r $PROJECT_NAME.app Payload/
-        zip -r ../../../PackardStopwatch-unsigned.ipa Payload
-        cd ../../..
-        ls -lh PackardStopwatch-unsigned.ipa
+        cp -r Runner.app Payload/
+        zip -r PackardStopwatch.ipa Payload
+        ls -lh PackardStopwatch.ipa
     
-    - name: Загрузка IPA как артефакт
+    - name: Upload IPA artifact
       uses: actions/upload-artifact@v4
       with:
-        name: PackardStopwatch-iOS
-        path: PackardStopwatch-unsigned.ipa
+        name: PackardStopwatch-IPA
+        path: build/ios/iphoneos/PackardStopwatch.ipa
         retention-days: 30
