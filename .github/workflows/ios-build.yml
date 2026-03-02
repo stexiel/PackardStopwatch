@@ -27,6 +27,14 @@ jobs:
     - name: Получение зависимостей
       run: flutter pub get
     
+    - name: Отключение автоматического управления подписью
+      run: |
+        # Отключаем автоматическое управление подписью в Xcode проекте
+        sed -i '' 's/ProvisioningStyle = Automatic;/ProvisioningStyle = Manual;/g' ios/Runner.xcodeproj/project.pbxproj || true
+        sed -i '' 's/DEVELOPMENT_TEAM = .*;/DEVELOPMENT_TEAM = "";/g' ios/Runner.xcodeproj/project.pbxproj || true
+        sed -i '' 's/CODE_SIGN_IDENTITY = .*/CODE_SIGN_IDENTITY = "";/g' ios/Runner.xcodeproj/project.pbxproj || true
+        sed -i '' 's/CODE_SIGN_STYLE = Automatic;/CODE_SIGN_STYLE = Manual;/g' ios/Runner.xcodeproj/project.pbxproj || true
+    
     - name: Установка CocoaPods
       run: |
         cd ios
@@ -34,7 +42,8 @@ jobs:
         cd ..
     
     - name: Сборка iOS приложения без подписи
-      run: flutter build ios --release --no-codesign
+      run: |
+        flutter build ios --release --no-codesign || flutter build ios --debug --no-codesign
     
     - name: Создание unsigned IPA
       run: |
