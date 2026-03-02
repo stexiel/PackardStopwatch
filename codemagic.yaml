@@ -32,8 +32,12 @@ workflows:
           mkdir -p Payload
           cp -r Runner.app Payload/
           zip -r packard_stopwatch.ipa Payload
+          ls -lh packard_stopwatch.ipa
+          mv packard_stopwatch.ipa ../../../
+          cd ../../..
+          ls -lh packard_stopwatch.ipa
     artifacts:
-      - build/ios/iphoneos/*.ipa
+      - packard_stopwatch.ipa
       - build/ios/iphoneos/Runner.app
     publishing:
       email:
