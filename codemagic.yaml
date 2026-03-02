@@ -7,14 +7,7 @@ workflows:
       xcode: latest
       cocoapods: default
     scripts:
-      - name: Очистка и подготовка
-        script: |
-          flutter clean
-          rm -rf ios/Pods
-          rm -rf ios/.symlinks
-          rm -rf ios/Flutter/Flutter.framework
-          rm -rf ios/Flutter/Flutter.podspec
-      - name: Получение зависимостей
+      - name: Получение зависимостей Flutter
         script: |
           flutter pub get
       - name: Установка CocoaPods
@@ -22,10 +15,10 @@ workflows:
           cd ios
           pod install
           cd ..
-      - name: Сборка iOS
+      - name: Сборка iOS приложения
         script: |
           flutter build ios --release --no-codesign
-      - name: Создание IPA
+      - name: Создание IPA файла
         script: |
           cd build/ios/iphoneos
           mkdir -p Payload
