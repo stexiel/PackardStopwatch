@@ -1,0 +1,10 @@
+# Dummy pubspec.yaml для обхода автоопределения Codemagic
+# Этот файл не используется - проект на React Native + Expo
+name: packard_stopwatch
+description: Dummy Flutter project
+version: 1.0.0
+environment:
+  sdk: '>=2.12.0 <4.0.0'
+dependencies:
+  flutter:
+    sdk: flutter

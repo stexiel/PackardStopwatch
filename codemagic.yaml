@@ -18,7 +18,12 @@ workflows:
         # Отключаем автоматическое определение Flutter
         CM_FLUTTER_PROJECT: "false"
     scripts:
-      - name: Установка зависимостей
+      - name: Пропуск Flutter зависимостей (проект на React Native)
+        script: |
+          echo "Это React Native проект, пропускаем Flutter шаги"
+          echo "Используем npm вместо Flutter"
+      
+      - name: Установка npm зависимостей
         script: |
           npm install
       
