@@ -4,12 +4,9 @@
     "slug": "packard-stopwatch",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
     "platforms": ["ios", "android"],
     "splash": {
-      "image": "./assets/splash.png",
-      "resizeMode": "contain",
       "backgroundColor": "#000000"
     },
     "ios": {
@@ -18,14 +15,7 @@
       "buildNumber": "1.0.0"
     },
     "android": {
-      "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#000000"
-      },
       "package": "com.packard.stopwatch"
-    },
-    "web": {
-      "favicon": "./assets/favicon.png"
     }
   }
 }
