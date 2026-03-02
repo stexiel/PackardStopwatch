@@ -35,7 +35,7 @@ jobs:
     
     - name: Отключение code signing в Xcode проекте
       run: |
-        PROJECT_NAME=$(ls ios/*.xcodeproj | head -n 1 | xargs basename -s .xcodeproj)
+        PROJECT_NAME=$(basename ios/*.xcodeproj .xcodeproj)
         echo "Project name: $PROJECT_NAME"
         
         sed -i '' 's/CODE_SIGN_IDENTITY = "iPhone Developer";/CODE_SIGN_IDENTITY = "";/g' ios/$PROJECT_NAME.xcodeproj/project.pbxproj
@@ -46,7 +46,7 @@ jobs:
     
     - name: Сборка iOS без code signing
       run: |
-        PROJECT_NAME=$(ls ios/*.xcodeproj | head -n 1 | xargs basename -s .xcodeproj)
+        PROJECT_NAME=$(basename ios/*.xcodeproj .xcodeproj)
         cd ios
         xcodebuild -workspace $PROJECT_NAME.xcworkspace \
           -scheme $PROJECT_NAME \
@@ -62,7 +62,7 @@ jobs:
     
     - name: Создание unsigned IPA
       run: |
-        PROJECT_NAME=$(ls ios/*.xcodeproj | head -n 1 | xargs basename -s .xcodeproj)
+        PROJECT_NAME=$(basename ios/*.xcodeproj .xcodeproj)
         cd ios/build/Release-iphoneos
         mkdir -p Payload
         cp -r $PROJECT_NAME.app Payload/
