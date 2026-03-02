@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Packard Stopwatch">
+    <title>Packard Stopwatch</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-user-select: none;
+            user-select: none;
+            -webkit-touch-callout: none;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            width: 100vw;
+            height: 100vh;
+            position: fixed;
+        }
+
+        #stopwatch {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            padding: 20px 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            cursor: move;
+            touch-action: none;
+            transition: background-color 0.3s ease;
+        }
+
+        #stopwatch.running {
+            background-color: #4CAF50;
+        }
+
+        #stopwatch.paused {
+            background-color: #f44336;
+        }
+
+        #time {
+            color: white;
+            font-size: 48px;
+            font-weight: bold;
+            font-family: 'Courier New', monospace;
+            letter-spacing: 2px;
+            text-align: center;
+            white-space: nowrap;
+        }
+
+        #instructions {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 10px;
+            font-size: 14px;
+            text-align: center;
+            max-width: 90%;
+            opacity: 0.8;
+        }
+
+        #instructions.hidden {
+            display: none;
+        }
+
+        @media (max-width: 600px) {
+            #time {
+                font-size: 36px;
+            }
+            #stopwatch {
+                padding: 15px 25px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="stopwatch" class="paused">
+        <div id="time">00:00:00</div>
+    </div>
+
+    <div id="instructions">
+        <strong>Управление:</strong><br>
+        Тап - Старт/Пауза | Двойной тап - Сброс<br>
+        Перетаскивание - Переместить | Долгое нажатие - Выход
+    </div>
+
+    <script>
+        const stopwatchEl = document.getElementById('stopwatch');
+        const timeEl = document.getElementById('time');
+        const instructionsEl = document.getElementById('instructions');
+
+        let startTime = 0;
+        let elapsedTime = 0;
+        let timerInterval = null;
+        let isRunning = false;
+        let lastTapTime = 0;
+        let longPressTimer = null;
+        let isDragging = false;
+        let dragStartX = 0;
+        let dragStartY = 0;
+        let elementX = 0;
+        let elementY = 0;
+
+        function formatTime(ms) {
+            const totalSeconds = Math.floor(ms / 1000);
+            const minutes = Math.floor(totalSeconds / 60);
+            const seconds = totalSeconds % 60;
+            const milliseconds = Math.floor((ms % 1000) / 10);
+            
+            return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}:${String(milliseconds).padStart(2, '0')}`;
+        }
+
+        function updateDisplay() {
+            const currentTime = isRunning ? Date.now() - startTime + elapsedTime : elapsedTime;
+            timeEl.textContent = formatTime(currentTime);
+        }
+
+        function startStopwatch() {
+            if (!isRunning) {
+                startTime = Date.now();
+                isRunning = true;
+                stopwatchEl.classList.remove('paused');
+                stopwatchEl.classList.add('running');
+                timerInterval = setInterval(updateDisplay, 10);
+            } else {
+                isRunning = false;
+                elapsedTime += Date.now() - startTime;
+                stopwatchEl.classList.remove('running');
+                stopwatchEl.classList.add('paused');
+                clearInterval(timerInterval);
+            }
+        }
+
+        function resetStopwatch() {
+            isRunning = false;
+            elapsedTime = 0;
+            startTime = 0;
+            stopwatchEl.classList.remove('running');
+            stopwatchEl.classList.add('paused');
+            clearInterval(timerInterval);
+            updateDisplay();
+        }
+
+        function handleTap(e) {
+            if (isDragging) return;
+
+            const currentTime = Date.now();
+            const timeDiff = currentTime - lastTapTime;
+
+            if (timeDiff < 300 && timeDiff > 0) {
+                resetStopwatch();
+            } else {
+                setTimeout(() => {
+                    if (Date.now() - currentTime < 300) {
+                        startStopwatch();
+                    }
+                }, 300);
+            }
+
+            lastTapTime = currentTime;
+        }
+
+        function handleLongPress() {
+            if (confirm('Выйти из секундомера?')) {
+                window.close();
+                if (!window.closed) {
+                    window.location.href = 'about:blank';
+                }
+            }
+        }
+
+        function startDrag(e) {
+            isDragging = false;
+            const touch = e.touches ? e.touches[0] : e;
+            dragStartX = touch.clientX - elementX;
+            dragStartY = touch.clientY - elementY;
+
+            longPressTimer = setTimeout(handleLongPress, 800);
+        }
+
+        function drag(e) {
+            e.preventDefault();
+            const touch = e.touches ? e.touches[0] : e;
+            const moveX = Math.abs(touch.clientX - dragStartX);
+            const moveY = Math.abs(touch.clientY - dragStartY);
+
+            if (moveX > 10 || moveY > 10) {
+                isDragging = true;
+                clearTimeout(longPressTimer);
+                
+                elementX = touch.clientX - dragStartX;
+                elementY = touch.clientY - dragStartY;
+
+                stopwatchEl.style.left = elementX + 'px';
+                stopwatchEl.style.top = elementY + 'px';
+                stopwatchEl.style.transform = 'none';
+            }
+        }
+
+        function endDrag(e) {
+            clearTimeout(longPressTimer);
+            
+            if (!isDragging) {
+                handleTap(e);
+            }
+            
+            setTimeout(() => {
+                isDragging = false;
+            }, 100);
+        }
+
+        stopwatchEl.addEventListener('mousedown', startDrag);
+        stopwatchEl.addEventListener('touchstart', startDrag, { passive: false });
+
+        document.addEventListener('mousemove', drag);
+        document.addEventListener('touchmove', drag, { passive: false });
+
+        document.addEventListener('mouseup', endDrag);
+        document.addEventListener('touchend', endDrag);
+
+        setTimeout(() => {
+            instructionsEl.classList.add('hidden');
+        }, 5000);
+
+        updateDisplay();
+
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js');
+        }
+    </script>
+</body>
+</html>
