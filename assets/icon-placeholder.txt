@@ -1,0 +1,7 @@
+Placeholder for icons. 
+Expo will generate default icons if these are missing.
+You can add custom icons later by replacing:
+- icon.png (1024x1024)
+- splash.png (1284x2778)
+- adaptive-icon.png (1024x1024)
+- favicon.png (48x48)

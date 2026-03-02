@@ -12,31 +12,27 @@ migrate_working_dir/
 
 # IntelliJ related
 *.iml
-*.ipr
-*.iws
-.idea/
+*.hprof
+.cxx/
+*.keystore
+!debug.keystore
 
-# The .vscode folder contains launch configuration and tasks you configure in
-# VS Code which you may wish to be included in version control, so this line
-# is commented out by default.
-#.vscode/
+# node.js
+node_modules/
+npm-debug.log
+yarn-error.log
 
-# Flutter/Dart/Pub related
-**/doc/api/
-**/ios/Flutter/.last_build_id
-.dart_tool/
-.flutter-plugins
-.flutter-plugins-dependencies
-.packages
-.pub-cache/
-.pub/
-/build/
+# Expo
+.expo/
+.expo-shared/
+dist/
+web-build/
 
-# Symbolication related
-app.*.symbols
+# Bundle artifacts
+*.jsbundle
 
-# Obfuscation related
-app.*.map.json
+# CocoaPods
+/ios/Pods/
 
 # Android Studio will place build artifacts here
 /android/app/debug
