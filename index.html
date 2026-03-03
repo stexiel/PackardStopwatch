@@ -100,10 +100,6 @@
             border-color: #4ade80;
         }
 
-        #pipButton.hidden {
-            display: none;
-        }
-
         .install-prompt {
             position: fixed;
             bottom: 0;
@@ -146,11 +142,17 @@
         }
 
         #pipCanvas {
-            display: none;
+            position: fixed;
+            top: -9999px;
+            left: -9999px;
         }
 
         #pipVideo {
-            display: none;
+            position: fixed;
+            top: -9999px;
+            left: -9999px;
+            width: 400px;
+            height: 200px;
         }
 
         .hint {
@@ -175,7 +177,7 @@
     </div>
 
     <canvas id="pipCanvas" width="400" height="200"></canvas>
-    <video id="pipVideo" muted playsinline></video>
+    <video id="pipVideo" muted playsinline webkit-playsinline></video>
 
     <div class="install-prompt" id="installPrompt">
         <p style="margin-bottom: 10px; font-size: 16px;">📱 Установить Packard Stopwatch?</p>
@@ -201,12 +203,6 @@
         const video = document.getElementById('pipVideo');
         const ctx = canvas.getContext('2d');
 
-        // Проверка поддержки PiP
-        const supportsPiP = 'pictureInPictureEnabled' in document;
-        if (!supportsPiP) {
-            pipButton.classList.add('hidden');
-        }
-
         function updateDisplay() {
             const totalMs = Date.now() - startTime + elapsedTime;
             const minutes = Math.floor(totalMs / 60000);
@@ -223,11 +219,9 @@
         }
 
         function drawPiPCanvas(minutes, seconds, ms) {
-            // Очистка и фон
             ctx.fillStyle = isRunning ? '#1a3a1a' : '#3a1a1a';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            // Основное время
             ctx.fillStyle = isRunning ? '#4ade80' : '#f87171';
             ctx.font = 'bold 80px -apple-system, sans-serif';
             ctx.textAlign = 'center';
@@ -236,12 +230,10 @@
             const timeText = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
             ctx.fillText(timeText, canvas.width / 2, canvas.height / 2 - 20);
 
-            // Миллисекунды
             ctx.font = '40px -apple-system, sans-serif';
             ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
             ctx.fillText(`.${String(ms).padStart(2, '0')}`, canvas.width / 2, canvas.height / 2 + 40);
 
-            // Статус
             ctx.font = '20px -apple-system, sans-serif';
             ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
             ctx.fillText(isRunning ? 'ИДЕТ' : 'ПАУЗА', canvas.width / 2, 30);
@@ -249,7 +241,56 @@
 
         async function togglePiP() {
             try {
-                if (document.pictureInPictureElement) {
+                // Проверяем поддержку PiP (включая webkit-prefixed версию для Safari)
+                const pipSupported = document.pictureInPictureEnabled || 
+                                    video.webkitSupportsPresentationMode;
+
+                if (!pipSupported) {
+                    alert('Picture-in-Picture не поддерживается в этом браузере');
+                    return;
+                }
+
+                // Для Safari iOS используем webkit API
+                if (video.webkitSupportsPresentationMode) {
+                    if (video.webkitPresentationMode === 'picture-in-picture') {
+                        video.webkitSetPresentationMode('inline');
+                        pipActive = false;
+                        pipButton.classList.remove('active');
+                        pipButton.textContent = '📌 Поверх приложений';
+                        if (animationFrameId) {
+                            cancelAnimationFrame(animationFrameId);
+                        }
+                    } else {
+                        // Рисуем начальный кадр
+                        drawPiPCanvas(
+                            Math.floor(elapsedTime / 60000),
+                            Math.floor((elapsedTime % 60000) / 1000),
+                            Math.floor((elapsedTime % 1000) / 10)
+                        );
+
+                        // Создаем video stream из canvas
+                        const stream = canvas.captureStream(30);
+                        video.srcObject = stream;
+                        await video.play();
+                        
+                        // Запускаем PiP через webkit API
+                        video.webkitSetPresentationMode('picture-in-picture');
+                        pipActive = true;
+                        pipButton.classList.add('active');
+                        pipButton.textContent = '✓ Активно';
+
+                        // Запускаем анимацию
+                        function animate() {
+                            if (pipActive) {
+                                updateDisplay();
+                                animationFrameId = requestAnimationFrame(animate);
+                            }
+                        }
+                        animate();
+                    }
+                } 
+                // Для других браузеров используем стандартный API
+                else if (document.pictureInPictureElement) {
                     await document.exitPictureInPicture();
                     pipActive = false;
                     pipButton.classList.remove('active');
@@ -258,25 +299,21 @@
                         cancelAnimationFrame(animationFrameId);
                     }
                 } else {
-                    // Рисуем начальный кадр
                     drawPiPCanvas(
                         Math.floor(elapsedTime / 60000),
                         Math.floor((elapsedTime % 60000) / 1000),
                         Math.floor((elapsedTime % 1000) / 10)
                     );
 
-                    // Создаем video stream из canvas
                     const stream = canvas.captureStream(30);
                     video.srcObject = stream;
                     await video.play();
                     
-                    // Запускаем PiP
                     await video.requestPictureInPicture();
                     pipActive = true;
                     pipButton.classList.add('active');
                     pipButton.textContent = '✓ Активно';
 
-                    // Запускаем анимацию для обновления canvas
                     function animate() {
                         if (pipActive) {
                             updateDisplay();
@@ -287,7 +324,7 @@
                 }
             } catch (error) {
                 console.error('PiP error:', error);
-                alert('Picture-in-Picture не поддерживается в этом браузере');
+                alert('Ошибка активации Picture-in-Picture: ' + error.message);
             }
         }
 
@@ -296,12 +333,24 @@
             togglePiP();
         });
 
+        // Обработка выхода из PiP
         video.addEventListener('leavepictureinpicture', () => {
             pipActive = false;
             pipButton.classList.remove('active');
             pipButton.textContent = '📌 Поверх приложений';
             if (animationFrameId) {
                 cancelAnimationFrame(animationFrameId);
+            }
+        });
+
+        video.addEventListener('webkitpresentationmodechanged', () => {
+            if (video.webkitPresentationMode !== 'picture-in-picture') {
+                pipActive = false;
+                pipButton.classList.remove('active');
+                pipButton.textContent = '📌 Поверх приложений';
+                if (animationFrameId) {
+                    cancelAnimationFrame(animationFrameId);
+                }
             }
         });
 
