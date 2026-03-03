@@ -22,20 +22,19 @@ struct ContentView: View {
                     .font(.system(size: 72, weight: .ultraLight, design: .monospaced))
                     .foregroundColor(stopwatch.isRunning ? .green : .red)
                     .shadow(color: .white.opacity(0.3), radius: 20)
+                    .onTapGesture {
+                        stopwatch.toggle()
+                    }
+                    .onLongPressGesture(minimumDuration: 0.5) {
+                        stopwatch.reset()
+                    }
                 
                 Spacer()
                 
-                Text("Tap - Start/Pause • Double Tap - Reset")
+                Text("Tap - Start/Pause • Hold - Reset")
                     .font(.caption)
                     .foregroundColor(.gray)
                     .padding(.bottom, 50)
-            }
-            .contentShape(Rectangle())
-            .onTapGesture(count: 2) {
-                stopwatch.reset()
-            }
-            .onTapGesture(count: 1) {
-                stopwatch.toggle()
             }
             
             VStack {
@@ -43,7 +42,9 @@ struct ContentView: View {
                     Spacer()
                     
                     Button(action: {
-                        stopwatch.toggleLiveActivity()
+                        if #available(iOS 16.1, *) {
+                            stopwatch.toggleLiveActivity()
+                        }
                     }) {
                         HStack {
                             Image(systemName: stopwatch.liveActivityActive ? "checkmark.circle.fill" : "pin.circle")
@@ -104,12 +105,16 @@ class StopwatchManager: ObservableObject {
             self.elapsedTime = Date().timeIntervalSince(startTime)
             
             if self.liveActivityActive {
-                self.updateLiveActivity()
+                if #available(iOS 16.1, *) {
+                    self.updateLiveActivity()
+                }
             }
         }
         
         if liveActivityActive {
-            updateLiveActivity()
+            if #available(iOS 16.1, *) {
+                updateLiveActivity()
+            }
         }
     }
     
@@ -119,7 +124,9 @@ class StopwatchManager: ObservableObject {
         timer = nil
         
         if liveActivityActive {
-            updateLiveActivity()
+            if #available(iOS 16.1, *) {
+                updateLiveActivity()
+            }
         }
     }
     
@@ -131,7 +138,9 @@ class StopwatchManager: ObservableObject {
         startTime = nil
         
         if liveActivityActive {
-            updateLiveActivity()
+            if #available(iOS 16.1, *) {
+                updateLiveActivity()
+            }
         }
     }
     
