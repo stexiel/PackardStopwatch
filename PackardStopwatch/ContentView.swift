@@ -167,11 +167,6 @@ class StopwatchManager: ObservableObject {
     
     @available(iOS 16.1, *)
     private func startLiveActivity() {
-        guard ActivityAuthorizationInfo().areActivitiesEnabled else {
-            print("Live Activities are not enabled")
-            return
-        }
-        
         let attributes = StopwatchAttributes()
         let contentState = StopwatchAttributes.ContentState(
             elapsedTime: elapsedTime,
@@ -181,7 +176,7 @@ class StopwatchManager: ObservableObject {
         do {
             currentActivity = try Activity<StopwatchAttributes>.request(
                 attributes: attributes,
-                content: .init(state: contentState, staleDate: nil),
+                contentState: contentState,
                 pushType: nil
             )
             liveActivityActive = true
@@ -202,7 +197,7 @@ class StopwatchManager: ObservableObject {
         )
         
         Task {
-            await activity.update(.init(state: contentState, staleDate: nil))
+            await activity.update(using: contentState)
         }
     }
     
