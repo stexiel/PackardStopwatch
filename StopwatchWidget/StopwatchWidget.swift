@@ -2,13 +2,6 @@ import ActivityKit
 import WidgetKit
 import SwiftUI
 
-struct StopwatchAttributes: ActivityAttributes {
-    public struct ContentState: Codable, Hashable {
-        var elapsedTime: TimeInterval
-        var isRunning: Bool
-    }
-}
-
 struct StopwatchLiveActivity: Widget {
     var body: some WidgetConfiguration {
         ActivityConfiguration(for: StopwatchAttributes.self) { context in
