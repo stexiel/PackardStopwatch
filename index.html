@@ -100,6 +100,10 @@
             border-color: #4ade80;
         }
 
+        #pipButton.hidden {
+            display: none;
+        }
+
         .install-prompt {
             position: fixed;
             bottom: 0;
@@ -145,6 +149,10 @@
             display: none;
         }
 
+        #pipVideo {
+            display: none;
+        }
+
         .hint {
             position: absolute;
             bottom: 30px;
@@ -167,6 +175,7 @@
     </div>
 
     <canvas id="pipCanvas" width="400" height="200"></canvas>
+    <video id="pipVideo" muted playsinline></video>
 
     <div class="install-prompt" id="installPrompt">
         <p style="margin-bottom: 10px; font-size: 16px;">📱 Установить Packard Stopwatch?</p>
@@ -180,8 +189,8 @@
         let timerInterval = null;
         let isRunning = false;
         let lastTap = 0;
-        let pipWindow = null;
         let pipActive = false;
+        let animationFrameId = null;
 
         const minutesEl = document.getElementById('minutes');
         const secondsEl = document.getElementById('seconds');
@@ -189,7 +198,14 @@
         const statusEl = document.getElementById('status');
         const pipButton = document.getElementById('pipButton');
         const canvas = document.getElementById('pipCanvas');
+        const video = document.getElementById('pipVideo');
         const ctx = canvas.getContext('2d');
+
+        // Проверка поддержки PiP
+        const supportsPiP = 'pictureInPictureEnabled' in document;
+        if (!supportsPiP) {
+            pipButton.classList.add('hidden');
+        }
 
         function updateDisplay() {
             const totalMs = Date.now() - startTime + elapsedTime;
@@ -207,9 +223,11 @@
         }
 
         function drawPiPCanvas(minutes, seconds, ms) {
+            // Очистка и фон
             ctx.fillStyle = isRunning ? '#1a3a1a' : '#3a1a1a';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
+            // Основное время
             ctx.fillStyle = isRunning ? '#4ade80' : '#f87171';
             ctx.font = 'bold 80px -apple-system, sans-serif';
             ctx.textAlign = 'center';
@@ -218,39 +236,54 @@
             const timeText = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
             ctx.fillText(timeText, canvas.width / 2, canvas.height / 2 - 20);
 
+            // Миллисекунды
             ctx.font = '40px -apple-system, sans-serif';
             ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
             ctx.fillText(`.${String(ms).padStart(2, '0')}`, canvas.width / 2, canvas.height / 2 + 40);
+
+            // Статус
+            ctx.font = '20px -apple-system, sans-serif';
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+            ctx.fillText(isRunning ? 'ИДЕТ' : 'ПАУЗА', canvas.width / 2, 30);
         }
 
         async function togglePiP() {
             try {
-                if (pipWindow) {
+                if (document.pictureInPictureElement) {
                     await document.exitPictureInPicture();
-                    pipWindow = null;
                     pipActive = false;
                     pipButton.classList.remove('active');
                     pipButton.textContent = '📌 Поверх приложений';
+                    if (animationFrameId) {
+                        cancelAnimationFrame(animationFrameId);
+                    }
                 } else {
-                    drawPiPCanvas(0, 0, 0);
-                    const videoStream = canvas.captureStream(30);
-                    const video = document.createElement('video');
-                    video.srcObject = videoStream;
-                    video.muted = true;
+                    // Рисуем начальный кадр
+                    drawPiPCanvas(
+                        Math.floor(elapsedTime / 60000),
+                        Math.floor((elapsedTime % 60000) / 1000),
+                        Math.floor((elapsedTime % 1000) / 10)
+                    );
+
+                    // Создаем video stream из canvas
+                    const stream = canvas.captureStream(30);
+                    video.srcObject = stream;
                     await video.play();
                     
-                    pipWindow = await video.requestPictureInPicture();
+                    // Запускаем PiP
+                    await video.requestPictureInPicture();
                     pipActive = true;
                     pipButton.classList.add('active');
                     pipButton.textContent = '✓ Активно';
 
-                    pipWindow.addEventListener('resize', () => {
-                        drawPiPCanvas(
-                            Math.floor(elapsedTime / 60000),
-                            Math.floor((elapsedTime % 60000) / 1000),
-                            Math.floor((elapsedTime % 1000) / 10)
-                        );
-                    });
+                    // Запускаем анимацию для обновления canvas
+                    function animate() {
+                        if (pipActive) {
+                            updateDisplay();
+                            animationFrameId = requestAnimationFrame(animate);
+                        }
+                    }
+                    animate();
                 }
             } catch (error) {
                 console.error('PiP error:', error);
@@ -261,6 +294,15 @@
         pipButton.addEventListener('click', (e) => {
             e.stopPropagation();
             togglePiP();
+        });
+
+        video.addEventListener('leavepictureinpicture', () => {
+            pipActive = false;
+            pipButton.classList.remove('active');
+            pipButton.textContent = '📌 Поверх приложений';
+            if (animationFrameId) {
+                cancelAnimationFrame(animationFrameId);
+            }
         });
 
         function start() {
@@ -319,6 +361,7 @@
             lastTap = currentTime;
         });
 
+        // PWA установка
         let deferredPrompt;
         const installPrompt = document.getElementById('installPrompt');
         const installBtn = document.getElementById('installBtn');
@@ -349,13 +392,6 @@
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('sw.js');
         }
-
-        document.addEventListener('leavepictureinpicture', () => {
-            pipWindow = null;
-            pipActive = false;
-            pipButton.classList.remove('active');
-            pipButton.textContent = '📌 Поверх приложений';
-        });
     </script>
 </body>
 </html>
