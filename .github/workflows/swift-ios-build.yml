@@ -36,11 +36,18 @@ jobs:
     
     - name: Create unsigned IPA
       run: |
-        cd build/Release-iphoneos
+        # Find the build directory
+        BUILD_DIR=$(find ~/Library/Developer/Xcode/DerivedData -name "PackardStopwatch.app" -type d | head -1)
+        BUILD_PATH=$(dirname "$BUILD_DIR")
+        
+        cd "$BUILD_PATH"
         mkdir -p Payload
         cp -r PackardStopwatch.app Payload/
-        zip -r ../../PackardStopwatch.ipa Payload
-        cd ../..
+        zip -r PackardStopwatch.ipa Payload
+        
+        # Move IPA to workspace
+        mv PackardStopwatch.ipa $GITHUB_WORKSPACE/
+        cd $GITHUB_WORKSPACE
         ls -lh PackardStopwatch.ipa
     
     - name: Upload IPA artifact
