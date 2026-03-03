@@ -1,0 +1,51 @@
+name: Swift iOS Build with Live Activity
+
+on:
+  push:
+    branches: [ live-activity-feature ]
+  pull_request:
+    branches: [ live-activity-feature ]
+  workflow_dispatch:
+
+jobs:
+  build-ios:
+    runs-on: macos-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Select Xcode version
+      run: sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
+    
+    - name: Show Xcode version
+      run: xcodebuild -version
+    
+    - name: Build iOS app without code signing
+      run: |
+        xcodebuild -project PackardStopwatch.xcodeproj \
+          -scheme PackardStopwatch \
+          -configuration Release \
+          -sdk iphoneos \
+          -destination 'generic/platform=iOS' \
+          CODE_SIGN_IDENTITY="" \
+          CODE_SIGNING_REQUIRED=NO \
+          CODE_SIGNING_ALLOWED=NO \
+          DEVELOPMENT_TEAM="" \
+          clean build
+    
+    - name: Create unsigned IPA
+      run: |
+        cd build/Release-iphoneos
+        mkdir -p Payload
+        cp -r PackardStopwatch.app Payload/
+        zip -r ../../PackardStopwatch.ipa Payload
+        cd ../..
+        ls -lh PackardStopwatch.ipa
+    
+    - name: Upload IPA artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: PackardStopwatch-iOS-LiveActivity
+        path: PackardStopwatch.ipa
+        retention-days: 30

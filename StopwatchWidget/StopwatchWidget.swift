@@ -77,3 +77,10 @@ struct StopwatchLiveActivity: Widget {
         return String(format: "%02d:%02d", minutes, seconds)
     }
 }
+
+@main
+struct StopwatchWidgetBundle: WidgetBundle {
+    var body: some Widget {
+        StopwatchLiveActivity()
+    }
+}
