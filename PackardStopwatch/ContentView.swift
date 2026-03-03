@@ -15,23 +15,35 @@ struct ContentView: View {
             )
             .ignoresSafeArea()
             
-            VStack {
+            VStack(spacing: 20) {
                 Spacer()
                 
                 Text(stopwatch.formattedTime)
                     .font(.system(size: 72, weight: .ultraLight, design: .monospaced))
                     .foregroundColor(stopwatch.isRunning ? .green : .red)
                     .shadow(color: .white.opacity(0.3), radius: 20)
-                    .onTapGesture {
+                
+                HStack(spacing: 40) {
+                    Button(action: {
                         stopwatch.toggle()
+                    }) {
+                        Image(systemName: stopwatch.isRunning ? "pause.circle.fill" : "play.circle.fill")
+                            .font(.system(size: 60))
+                            .foregroundColor(.white.opacity(0.8))
                     }
-                    .onLongPressGesture(minimumDuration: 0.5) {
+                    
+                    Button(action: {
                         stopwatch.reset()
+                    }) {
+                        Image(systemName: "arrow.counterclockwise.circle.fill")
+                            .font(.system(size: 60))
+                            .foregroundColor(.white.opacity(0.8))
                     }
+                }
                 
                 Spacer()
                 
-                Text("Tap - Start/Pause • Hold - Reset")
+                Text("Play/Pause • Reset")
                     .font(.caption)
                     .foregroundColor(.gray)
                     .padding(.bottom, 50)
@@ -155,6 +167,11 @@ class StopwatchManager: ObservableObject {
     
     @available(iOS 16.1, *)
     private func startLiveActivity() {
+        guard ActivityAuthorizationInfo().areActivitiesEnabled else {
+            print("Live Activities are not enabled")
+            return
+        }
+        
         let attributes = StopwatchAttributes()
         let contentState = StopwatchAttributes.ContentState(
             elapsedTime: elapsedTime,
@@ -164,12 +181,14 @@ class StopwatchManager: ObservableObject {
         do {
             currentActivity = try Activity<StopwatchAttributes>.request(
                 attributes: attributes,
-                contentState: contentState,
+                content: .init(state: contentState, staleDate: nil),
                 pushType: nil
             )
             liveActivityActive = true
+            print("Live Activity started successfully")
         } catch {
-            print("Error starting Live Activity: \(error)")
+            print("Error starting Live Activity: \(error.localizedDescription)")
+            liveActivityActive = false
         }
     }
     
@@ -183,7 +202,7 @@ class StopwatchManager: ObservableObject {
         )
         
         Task {
-            await activity.update(using: contentState)
+            await activity.update(.init(state: contentState, staleDate: nil))
         }
     }
     
