@@ -15,7 +15,7 @@ struct ContentView: View {
             )
             .ignoresSafeArea()
             
-            VStack(spacing: 20) {
+            VStack {
                 Spacer()
                 
                 Text(stopwatch.formattedTime)
@@ -23,30 +23,19 @@ struct ContentView: View {
                     .foregroundColor(stopwatch.isRunning ? .green : .red)
                     .shadow(color: .white.opacity(0.3), radius: 20)
                 
-                HStack(spacing: 40) {
-                    Button(action: {
-                        stopwatch.toggle()
-                    }) {
-                        Image(systemName: stopwatch.isRunning ? "pause.circle.fill" : "play.circle.fill")
-                            .font(.system(size: 60))
-                            .foregroundColor(.white.opacity(0.8))
-                    }
-                    
-                    Button(action: {
-                        stopwatch.reset()
-                    }) {
-                        Image(systemName: "arrow.counterclockwise.circle.fill")
-                            .font(.system(size: 60))
-                            .foregroundColor(.white.opacity(0.8))
-                    }
-                }
-                
                 Spacer()
                 
-                Text("Play/Pause • Reset")
+                Text("Tap - Start/Pause • Double Tap - Reset")
                     .font(.caption)
                     .foregroundColor(.gray)
                     .padding(.bottom, 50)
+            }
+            .contentShape(Rectangle())
+            .onTapGesture(count: 2) {
+                stopwatch.reset()
+            }
+            .onTapGesture(count: 1) {
+                stopwatch.toggle()
             }
             
             VStack {
@@ -92,6 +81,38 @@ class StopwatchManager: ObservableObject {
     private var timer: Timer?
     private var startTime: Date?
     private var currentActivity: Activity<StopwatchAttributes>?
+    
+    init() {
+        // Subscribe to notifications from Live Activity buttons
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleToggle),
+            name: .toggleStopwatch,
+            object: nil
+        )
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleReset),
+            name: .resetStopwatch,
+            object: nil
+        )
+    }
+    
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+    }
+    
+    @objc private func handleToggle() {
+        DispatchQueue.main.async {
+            self.toggle()
+        }
+    }
+    
+    @objc private func handleReset() {
+        DispatchQueue.main.async {
+            self.reset()
+        }
+    }
     
     var formattedTime: String {
         let minutes = Int(elapsedTime) / 60

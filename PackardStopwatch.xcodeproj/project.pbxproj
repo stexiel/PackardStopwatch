@@ -11,10 +11,12 @@
 		A1000003000000000000001 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000004000000000000001 /* ContentView.swift */; };
 		A1000005000000000000001 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A1000006000000000000001 /* Assets.xcassets */; };
 		A1000009000000000000001 /* StopwatchAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000010000000000000001 /* StopwatchAttributes.swift */; };
+		A100000A000000000000001 /* StopwatchIntents.swift in Sources */ = {isa = PBXBuildFile; fileRef = A100000B000000000000001 /* StopwatchIntents.swift */; };
 		A1000011000000000000001 /* StopwatchWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000012000000000000001 /* StopwatchWidget.swift */; };
 		A1000013000000000000001 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A1000014000000000000001 /* WidgetKit.framework */; };
 		A1000015000000000000001 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A1000016000000000000001 /* SwiftUI.framework */; };
 		A1000019000000000000001 /* StopwatchAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000010000000000000001 /* StopwatchAttributes.swift */; };
+		A100001A000000000000001 /* StopwatchIntents.swift in Sources */ = {isa = PBXBuildFile; fileRef = A100000B000000000000001 /* StopwatchIntents.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -24,6 +26,7 @@
 		A1000007000000000000001 /* PackardStopwatch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PackardStopwatch.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A1000008000000000000001 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		A1000010000000000000001 /* StopwatchAttributes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StopwatchAttributes.swift; sourceTree = "<group>"; };
+		A100000B000000000000001 /* StopwatchIntents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StopwatchIntents.swift; sourceTree = "<group>"; };
 		A1000012000000000000001 /* StopwatchWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StopwatchWidget.swift; sourceTree = "<group>"; };
 		A1000014000000000000001 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
 		A1000016000000000000001 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
@@ -67,6 +70,7 @@
 				A1000002000000000000001 /* PackardStopwatchApp.swift */,
 				A1000004000000000000001 /* ContentView.swift */,
 				A1000010000000000000001 /* StopwatchAttributes.swift */,
+				A100000B000000000000001 /* StopwatchIntents.swift */,
 				A1000006000000000000001 /* Assets.xcassets */,
 				A1000008000000000000001 /* Info.plist */,
 			);
@@ -202,6 +206,7 @@
 				A1000003000000000000001 /* ContentView.swift in Sources */,
 				A1000001000000000000001 /* PackardStopwatchApp.swift in Sources */,
 				A1000009000000000000001 /* StopwatchAttributes.swift in Sources */,
+				A100000A000000000000001 /* StopwatchIntents.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -211,6 +216,7 @@
 			files = (
 				A1000011000000000000001 /* StopwatchWidget.swift in Sources */,
 				A1000019000000000000001 /* StopwatchAttributes.swift in Sources */,
+				A100001A000000000000001 /* StopwatchIntents.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
