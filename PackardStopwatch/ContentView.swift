@@ -188,6 +188,11 @@ class StopwatchManager: ObservableObject {
     
     @available(iOS 16.1, *)
     private func startLiveActivity() {
+        // Start stopwatch if not running
+        if !isRunning {
+            start()
+        }
+        
         let attributes = StopwatchAttributes()
         let contentState = StopwatchAttributes.ContentState(
             elapsedTime: elapsedTime,
@@ -201,9 +206,11 @@ class StopwatchManager: ObservableObject {
                 pushType: nil
             )
             liveActivityActive = true
-            print("Live Activity started successfully")
+            print("✅ Live Activity started successfully")
+            print("📱 Check Dynamic Island or Lock Screen")
         } catch {
-            print("Error starting Live Activity: \(error.localizedDescription)")
+            print("❌ Error starting Live Activity: \(error.localizedDescription)")
+            print("📋 Error details: \(error)")
             liveActivityActive = false
         }
     }
